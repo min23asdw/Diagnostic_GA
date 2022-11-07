@@ -9,7 +9,7 @@ public class main {
     private static ArrayList<ArrayList<Double[]>> train_dataset = new ArrayList<>();
     private static ArrayList<ArrayList<Double[]>> train_desired_data = new ArrayList<>();
 
-    private static int NumberOftest = 1;
+    private static int NumberOftest = 10;
 
     public static void main(String[] args) throws IOException {
         for(int tain_i = 0 ; tain_i < NumberOftest ; tain_i ++) {
@@ -35,7 +35,7 @@ public class main {
 
 //                    temp_input[0] = Double.parseDouble(eachLine[0]);      // index 0 = id
                     for(int  i = 2 ; i<eachLine.length;i++){
-                        temp_input[i-2] = Double.parseDouble(eachLine[i]);
+                        temp_input[i-2] = Double.parseDouble(eachLine[i])/6000.8;  // lazy min max norm
                     }
 
                     if(eachLine[1].equals("B")){ ans = new Double[]{0.0, 1.0};   // b 01
@@ -63,12 +63,12 @@ public class main {
 
         for(int test_i = 0 ; test_i < NumberOftest ; test_i ++) {
             System.out.println("===================================================");
-            genetic ga = new genetic("30,4,4,2", 50 , 100 );
+            genetic ga = new genetic("30,16,2",  0 , 50 , 100 );
             System.out.println("train: " + test_i);
             ga.settraindata( train_dataset.get(test_i), train_desired_data.get(test_i));
             ga.run_gen();
             System.out.println("test: " + test_i);
-//            ga.test(test_dataset.get(test_i), test_desired_data.get(test_i));
+            ga.test(test_dataset.get(test_i), test_desired_data.get(test_i));
             System.out.println("===================================================");
         }
     }

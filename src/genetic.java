@@ -5,22 +5,27 @@ import java.util.Random;
 public class genetic {
 
     String[] mlp;
+    String neural_type;
+    double biases;
     int num_population;
     int maxGeGeneration;
     Random r = new Random();
     individual[] population_pool;
+
+    individual[] selection_pool ;
 
 
     ArrayList<Double[]> train_dataset;
     ArrayList<Double[]> train_desired_data;
 
 
-    ArrayList<Double[]> Result = new ArrayList<>();
+    ArrayList<Double[]> train_result = new ArrayList<>();
+    ArrayList<Double[]> test_result = new ArrayList<>();
 
     ArrayList< Pair<Double , individual>> scoreBoard = new ArrayList<>();
 
     double prob_mul = 0.01;
-    double prob_parent = 0.6;
+    double prob_parent = 0.3;
 
     double best_mlp_score = 0.0;
 
@@ -28,8 +33,10 @@ public class genetic {
 
 
 
-    public genetic( String _mlp , int _population , int _maxGeneration){
+    public genetic( String _mlp ,double _biases ,int _population , int _maxGeneration){
+        this.neural_type = _mlp;
         this.mlp = _mlp.split(",");;
+        this.biases = _biases;
         this.num_population = _population;
         this.maxGeGeneration = _maxGeneration;
 
@@ -45,47 +52,63 @@ public class genetic {
     public void  init_population(){
         individual[] init =  new individual[num_population];
         for(int indi = 0 ; indi < num_population ; indi++){
-            individual indiler = new individual( "30,5,2" ,0 );
+            individual indiler = new individual( neural_type ,biases );
             init[indi] = indiler;
         }
         this.population_pool = init;
-
+        this.selection_pool = new individual[num_population];
 
     }
 
 
     public void run_gen(){
-
+        System.out.println("train");
         init_population();
 
         for (int gen = 0 ; gen < maxGeGeneration ; gen++){
 
-            Double[] result =  population_eval();
-            Result.add(result);
+            Double[] result =  population_eval(train_dataset,train_desired_data);
+            System.out.println(result[0] + "\t" + result[1] + "\t" + result[2] );
+            train_result.add(result);
+            selection();
             ArrayList<individual> offspring_pool =  p1();
               p2(offspring_pool);
-              //TODO
+
               add2N(offspring_pool);
 
               if(gen != maxGeGeneration-1)  move2next_population(offspring_pool);
 
         }
+        System.out.println("");
+
+
+
+
+
+    }
+
+    public void test(ArrayList<Double[]> dataset, ArrayList<Double[]> desired_data){
+        System.out.println("test");
+        individual best_solution =  scoreBoard.get(scoreBoard.size()-1).individual;
+        best_solution.test(dataset,desired_data);
+//            test_result.add(score);
 
         System.out.println("test");
+
 
 
     }
 
 
 
-    public Double[] population_eval(){
+    public Double[] population_eval(ArrayList<Double[]> dataset , ArrayList<Double[]> desired_data){
         double sum_fit = 0;
         double avg_fit;
         double max_fit = -9999999;
 
         //eval fitness
         for (individual mlp : population_pool) {
-            double error_mlp =   mlp.eval(train_dataset , train_desired_data);
+            double error_mlp =   mlp.eval(dataset , desired_data);
 
 
             double fitness = scaling(error_mlp);
@@ -98,7 +121,7 @@ public class genetic {
 
             if(best_mlp_score < fitness){
                 best_mlp_score = fitness;
-                Pair<Double , individual> score_individual = new Pair(fitness, mlp);
+                Pair<Double , individual> score_individual = new Pair<>(fitness, mlp);
                 scoreBoard.add(score_individual);
             }
 
@@ -113,16 +136,34 @@ public class genetic {
         return 1/(error + 0.01)  ;
     }
 
+    public void selection(){
+        // random tournament selection
+
+        for(int i = 0 ; i < num_population ; i++) {
+
+            int select1 = r.nextInt(0,49);
+            int select2 = r.nextInt(0,49);
+            individual a1 = population_pool[select1].clone();
+            individual a2 = population_pool[select2].clone();
+
+            double a1_fit = scaling(a1.avg_error_n);
+            double a2_fit = scaling(a2.avg_error_n);
+
+            if(a1_fit > a2_fit  ) selection_pool[i] = a1;
+            else  selection_pool[i] = a2;
+        }
+    }
+
 
     public  ArrayList<individual>  p1(){
         ArrayList<individual> offspring_pool = new ArrayList<>();
         //pair selection
-//        unique_random  uq = new unique_random(train_dataset.size());
         for(int ran = 0 ; ran < num_population/2 ; ran++){
-            int select1 = r.nextInt(0,49);
-            int select2 =r.nextInt(0,49);
+            int select1 = r.nextInt(0,selection_pool.length);
+            int select2 = r.nextInt(0,selection_pool.length);
 
-            individual offspring =  crossover(population_pool[select1], population_pool[select2]);
+            individual offspring =  crossover(selection_pool[select1], selection_pool[select2]);
+
             offspring_pool.add(offspring);
         }
         return offspring_pool;
@@ -130,10 +171,10 @@ public class genetic {
 
 
     public individual crossover(individual f , individual m){
-        Matrix[] father_weight = f.get_weight();
-        Matrix[] mother_weight = m.get_weight();
+        Matrix[] father_weight = f.clone().get_weight();
+        Matrix[] mother_weight = m.clone().get_weight();
 
-        individual offspring = new individual( "30,5,2" ,0 );
+        individual offspring = new individual( neural_type ,biases );
 
         Matrix[] offspring_weight = newWeight(f);
         for (int layer = 0 ; layer < father_weight.length ; layer++ ) {
@@ -170,7 +211,7 @@ public class genetic {
 
                       if( q < prob_mul){
 //                          System.out.println("Mualtation!!");
-                          multation(offspring,layer,node);
+                          mutation(offspring,layer,node);
                       }
                   }
               }
@@ -179,7 +220,7 @@ public class genetic {
     }
 
 
-    public void multation(individual offspring , int layer , int node){
+    public void mutation(individual offspring , int layer , int node){
         Matrix[] a = offspring.get_weight();
         for (int weightline = 0 ; weightline < a[layer].cols ; weightline ++ ){
             double e = uniform_random(-1.0,1.0);

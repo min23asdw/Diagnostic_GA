@@ -67,6 +67,7 @@ public class individual  implements Cloneable {
             // avg_E(n) = 1/N ∑ E(n)  : avg (sse)
             avg_error_n =  sum / (error_n.size());
 
+        error_n.clear();
         return avg_error_n;
 
     }

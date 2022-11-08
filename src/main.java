@@ -33,7 +33,6 @@ public class main {
 
                 Double[] ans = new Double[2];
 
-//                    temp_input[0] = Double.parseDouble(eachLine[0]);      // index 0 = id
                     for(int  i = 2 ; i<eachLine.length;i++){
                         temp_input[i-2] = Double.parseDouble(eachLine[i])/6000.8;  // lazy min max norm
                     }
@@ -42,7 +41,6 @@ public class main {
                     }
                     else if (eachLine[1].equals("M")){ans = new Double[]{1.0, 0.0};  // m 10
                     }
-
 
                         if (line_i % 10 == tain_i) {  // 10% for test
                             test_dataset_i.add(temp_input);
@@ -62,14 +60,14 @@ public class main {
         System.out.println("work");
 
         for(int test_i = 0 ; test_i < NumberOftest ; test_i ++) {
-            System.out.println("===================================================");
-            genetic ga = new genetic("30,16,2",  0 , 50 , 100 );
-            System.out.println("train: " + test_i);
+//            System.out.println("===================================================");
+            genetic ga = new genetic("3,3,2",  0.5 , 50 , 100 );
+//            System.out.println("train: " + test_i);
             ga.settraindata( train_dataset.get(test_i), train_desired_data.get(test_i));
             ga.run_gen();
-            System.out.println("test: " + test_i);
+//            System.out.println("test: " + test_i);
             ga.test(test_dataset.get(test_i), test_desired_data.get(test_i));
-            System.out.println("===================================================");
+//            System.out.println("===================================================");
         }
     }
 }

@@ -52,24 +52,3 @@ class Pair<U, V>
         return new Pair<>(a, b);
     }
 }
-
-////// Program to implement Pair class in Java
-////class Main
-////{
-////    public static void main(String[] args)
-////    {
-////        Pair<String, Integer> p1 = Pair.of("John", 26);
-////        Pair<String, Integer> p2 = Pair.of("Tom", 30);
-////        Pair<String, Integer> p3 = Pair.of("John", 26);
-////
-////        List<Pair<String, Integer>> pairs = new ArrayList<>();
-////        pairs.add(p1);
-////        pairs.add(p2);
-////        pairs.add(p3);
-////
-////        System.out.println(pairs);
-////
-////        Set<Pair<String, Integer>> distinctPairs = new HashSet<>(pairs);
-////        System.out.println(distinctPairs);
-////    }
-////}

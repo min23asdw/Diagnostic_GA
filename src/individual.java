@@ -9,21 +9,18 @@ public class individual  implements Cloneable {
     private double biases; // threshold connected : biases
 
     private Matrix[] layer_weight  ;
-//    private Matrix[] change_weight;
-
     private Double[][]  node  ;
-//    private Double[][]  local_gradient_node  ;
   // TODO    30 - xxx - 2
     public individual(   String _neural_type ,double _biases) {
 
         String[] splitArray = _neural_type.split(",");
         int[] array = new int[splitArray.length];
-        for (int i = 0; i < splitArray.length; i++) array[i] = Integer.parseInt(splitArray[i]);
+        for (int i = 0; i < splitArray.length; i++) {
+            array[i] = Integer.parseInt(splitArray[i]);
+        }
 
         this.neural_type = array;
-
         init_Structor();
-
         this.biases = _biases;
 
     }
@@ -34,13 +31,44 @@ public class individual  implements Cloneable {
         }
 
         layer_weight = new Matrix[neural_type.length-1];
-//        change_weight = new Matrix[neural_type.length-1];
         for (int layer = 0; layer < layer_weight.length; layer++) {
             Matrix weight = new Matrix(neural_type[layer+1],neural_type[layer] ,true);
-//            Matrix change = new Matrix(neural_type[layer+1],neural_type[layer] ,false);
             layer_weight[layer] = weight;
-//            change_weight[layer] = change;
         }
+    }
+
+    public double eval(ArrayList<Double[]> _train_dataset, ArrayList<Double[]> _train_desired_data  ){
+
+            unique_random  uq = new unique_random(_train_dataset.size());
+            for(int data = 0; data < _train_dataset.size() ; data++) {
+                //random  one dataset
+                int ran_dataset_i = uq.get_num();
+                //setup dataset value to input node
+                for(int input_i = 0 ; input_i < neural_type[0] ; input_i ++){
+                    node[0][input_i] = _train_dataset.get(ran_dataset_i)[input_i];
+                }
+
+                //cal ∑(input x weight) -> activation_Fn  for each neuron_node
+                forward_pass();
+
+                get_error(_train_desired_data.get(ran_dataset_i));
+            }
+
+            double sum = 0.0;
+            for (Double[] doubles : error_n) {
+                // ∑E(n) = 1/2 ∑ e^2   : sum of squared error at iteration n (sse)
+                double error_output = 0.0;
+                for (double error:doubles) {
+
+                    error_output += Math.pow(error, 2);
+                }
+                sum += error_output;
+            }
+            // avg_E(n) = 1/N ∑ E(n)  : avg (sse)
+            avg_error_n =  sum / (error_n.size());
+
+        return avg_error_n;
+
     }
 
     public void test(ArrayList<Double[]> _test_dataset,ArrayList<Double[]> _test_desired_data){
@@ -65,14 +93,7 @@ public class individual  implements Cloneable {
                 node[node.length-1][0] = 0.0;
                 node[node.length-1][1] = 1.0;
             }
-//            System.out.println("get");
-//                for (Double val : node[node.length-1]) {
-//                    System.out.println(val);
-//                }
-//                System.out.println("desired");
-//                for (Double val : _test_desired_data.get(test_i)) {
-//                    System.out.println(val);
-//                }
+
             if(node[node.length-1][0].equals(_test_desired_data.get(test_i)[0]) && node[node.length-1][0].equals(1.0) ) t_p++;
             if(node[node.length-1][0].equals(_test_desired_data.get(test_i)[0]) && node[node.length-1][0].equals(0.0)  ) t_n++;
 
@@ -80,47 +101,9 @@ public class individual  implements Cloneable {
             if(!node[node.length-1][0].equals(_test_desired_data.get(test_i)[0])  && node[node.length-1][0].equals(0.0)  ) f_n++;
         }
         // t_p       t_n    f_p   f_n
-        System.out.println(t_p+"\t"+t_n+"\t"+f_p+"\t"+f_n);
+//        System.out.println(t_p+"\t"+t_n+"\t"+f_p+"\t"+f_n);
         System.out.println( t_p/(t_p+f_p) +"\t"+  t_p/(t_p+f_n) +"\t"+  (t_p+t_n)/(t_p+t_n+f_p+f_n)) ;
         error_n.clear();
-    }
-    public double eval(ArrayList<Double[]> _train_dataset, ArrayList<Double[]> _train_desired_data  ){
-
-            unique_random  uq = new unique_random(_train_dataset.size());
-            for(int data = 0; data < _train_dataset.size() ; data++) {
-                //random  one dataset
-                int ran_dataset_i = uq.get_num();
-                //setup dataset value to input node
-                for(int input_i = 0 ; input_i < neural_type[0] ; input_i ++){
-                    node[0][input_i] = _train_dataset.get(ran_dataset_i)[input_i];
-                }
-
-                //cal ∑(input x weight) -> activation_Fn  for each neuron_node
-                forward_pass();
-
-                get_error(_train_desired_data.get(ran_dataset_i));
-            }
-
-
-            double sum = 0.0;
-            for (Double[] doubles : error_n) {
-                // ∑E(n) = 1/2 ∑ e^2   : sum of squared error at iteration n (sse)
-                double error_output = 0.0;
-                for (double error:doubles) {
-
-                    error_output += Math.pow(error, 2);
-                }
-                sum += error_output;
-            }
-            // avg_E(n) = 1/N ∑ E(n)  : avg (sse)
-            avg_error_n =  sum / (error_n.size());
-
-//            error_n.clear();
-
-
-        //TODO return avg_error_n
-        return avg_error_n;
-
     }
 
     private void forward_pass(){
@@ -171,6 +154,7 @@ public class individual  implements Cloneable {
     public  Matrix[] get_weight(){
         return  layer_weight;
     }
+
     public  void set_weight(Matrix[] _newWeight){
         this.layer_weight = _newWeight;
     }
@@ -178,7 +162,6 @@ public class individual  implements Cloneable {
     public void add_weight(int layer , int node , int column , double value){
         layer_weight[layer].add(node,column,value);
     }
-
 
     public double activation_fn(Double x){
         //TODO

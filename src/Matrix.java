@@ -16,8 +16,6 @@ public class Matrix {
         this.cols=cols;
         Random generator = new Random();
 
-
-
         if(random){
             for(int j=0;j<rows;j++)
             {
@@ -33,27 +31,7 @@ public class Matrix {
         }
     }
 
-    public static Matrix plus_matrix(Matrix a, Matrix b) {
-        Matrix temp=new Matrix(a.rows,a.cols , false);
-        for(int j=0;j<a.rows;j++)
-        {
-            for(int i=0;i<a.cols;i++)
-            {
-                temp.data[j][i]=a.data[j][i]+b.data[j][i];
-            }
-        }
-        return temp;
-    }
-
-    public void set(int row, int col, double value) {
-        this.data[row][col] = value;
-    }
-
     public void add(int row, int col, double value) {
         this.data[row][col] += value;
-    }
-
-    public double get(int row, int col) {
-       return  this.data[row][col] ;
     }
 }

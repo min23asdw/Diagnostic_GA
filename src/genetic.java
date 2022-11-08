@@ -1,5 +1,3 @@
-
-
 import java.util.ArrayList;
 import java.util.Random;
 public class genetic {
@@ -14,23 +12,16 @@ public class genetic {
 
     individual[] selection_pool ;
 
-
     ArrayList<Double[]> train_dataset;
     ArrayList<Double[]> train_desired_data;
 
-
     ArrayList<Double[]> train_result = new ArrayList<>();
-    ArrayList<Double[]> test_result = new ArrayList<>();
 
     ArrayList< Pair<Double , individual>> scoreBoard = new ArrayList<>();
 
     double prob_mul = 0.01;
     double prob_parent = 0.3;
-
     double best_mlp_score = 0.0;
-
-    double fx_min = Double.MAX_VALUE;
-
 
 
     public genetic( String _mlp ,double _biases ,int _population , int _maxGeneration){
@@ -39,8 +30,6 @@ public class genetic {
         this.biases = _biases;
         this.num_population = _population;
         this.maxGeGeneration = _maxGeneration;
-
-
 
     }
 
@@ -57,49 +46,36 @@ public class genetic {
         }
         this.population_pool = init;
         this.selection_pool = new individual[num_population];
-
     }
 
-
     public void run_gen(){
-        System.out.println("train");
+//        System.out.println("train");
         init_population();
 
         for (int gen = 0 ; gen < maxGeGeneration ; gen++){
 
             Double[] result =  population_eval(train_dataset,train_desired_data);
-            System.out.println(result[0] + "\t" + result[1] + "\t" + result[2] );
+//            System.out.println(result[0] + "\t" + result[1] + "\t" + result[2] );
             train_result.add(result);
             selection();
             ArrayList<individual> offspring_pool =  p1();
-              p2(offspring_pool);
+            p2(offspring_pool);
+            add2N(offspring_pool);
 
-              add2N(offspring_pool);
-
-              if(gen != maxGeGeneration-1)  move2next_population(offspring_pool);
+            if(gen != maxGeGeneration-1)  move2next_population(offspring_pool);
 
         }
-        System.out.println("");
-
-
-
-
+//        System.out.println("");
 
     }
 
     public void test(ArrayList<Double[]> dataset, ArrayList<Double[]> desired_data){
-        System.out.println("test");
+//        System.out.println("test");
         individual best_solution =  scoreBoard.get(scoreBoard.size()-1).individual;
         best_solution.test(dataset,desired_data);
-//            test_result.add(score);
-
-        System.out.println("test");
-
-
+//        System.out.println("test");
 
     }
-
-
 
     public Double[] population_eval(ArrayList<Double[]> dataset , ArrayList<Double[]> desired_data){
         double sum_fit = 0;
@@ -110,12 +86,10 @@ public class genetic {
         for (individual mlp : population_pool) {
             double error_mlp =   mlp.eval(dataset , desired_data);
 
-
             double fitness = scaling(error_mlp);
             if(max_fit<fitness){
                 max_fit = fitness;
             }
-
 
             sum_fit += fitness;
 
@@ -124,8 +98,6 @@ public class genetic {
                 Pair<Double , individual> score_individual = new Pair<>(fitness, mlp);
                 scoreBoard.add(score_individual);
             }
-
-
 
         }
         avg_fit = sum_fit / num_population;
@@ -154,7 +126,6 @@ public class genetic {
         }
     }
 
-
     public  ArrayList<individual>  p1(){
         ArrayList<individual> offspring_pool = new ArrayList<>();
         //pair selection
@@ -168,7 +139,6 @@ public class genetic {
         }
         return offspring_pool;
     }
-
 
     public individual crossover(individual f , individual m){
         Matrix[] father_weight = f.clone().get_weight();
@@ -210,15 +180,12 @@ public class genetic {
                       double q = uniform_random(0.0,1.0);
 
                       if( q < prob_mul){
-//                          System.out.println("Mualtation!!");
                           mutation(offspring,layer,node);
                       }
                   }
               }
         }
-
     }
-
 
     public void mutation(individual offspring , int layer , int node){
         Matrix[] a = offspring.get_weight();
@@ -228,7 +195,6 @@ public class genetic {
         }
     }
 
-
     public void add2N(ArrayList<individual> offspring_pool ){
         while(offspring_pool.size() < num_population){
             int pick = r.nextInt(0,num_population-1);
@@ -236,7 +202,6 @@ public class genetic {
 
             offspring_pool.add(copy);
         }
-
     }
 
     public void move2next_population(ArrayList<individual> offspring_pool) {
@@ -250,7 +215,5 @@ public class genetic {
     public double uniform_random(double rangeMin , double rangeMax ){
         return rangeMin + (rangeMax - rangeMin) * r.nextDouble();
     }
-
-
 
 }
